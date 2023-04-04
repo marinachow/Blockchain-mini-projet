@@ -13,15 +13,26 @@ contract Lot {
         address manufacturer;
         string productName;
         uint totalProducts;
+        string currentOwner;
         string lastOwner;
         uint256 dateOfPurchase;
     }
 
     mapping (uint => Batch) batches;
+    uint public nextBatchId = 1;
 
-    function addBatch(uint _batchId, address _manufacturer, string memory _productName, uint _totalProducts, string memory _lastOwner, uint256 _dateOfPurchase) public {
-        Batch memory newBatch = Batch(_batchId, _manufacturer, _productName, _totalProducts, _lastOwner, _dateOfPurchase);
-        batches[_batchId] = newBatch;
+    function addBatch(address _manufacturer, string memory _productName, uint _totalProducts, string memory _lastOwner, uint256 _dateOfPurchase) public {
+        uint batchId = nextBatchId;
+        Batch memory newBatch = Batch(batchId, _manufacturer, _productName, _totalProducts, _lastOwner, _dateOfPurchase);
+        batches[batchId] = newBatch;
+        nextBatchId++;
+    }
+
+    function generateBatchId(string memory _currentOwner, uint256 _dateOfPurchase) public view returns (uint) {
+        bytes memory ownerBytes = bytes(_currentOwner);
+        bytes32 hash = keccak256(abi.encodePacked(ownerBytes, _dateOfPurchase));
+        uint batchId = uint(hash);
+        return batchId;
     }
 
     function getBatch(uint _batchId) public view returns (address, string memory, uint, string memory, uint256) {
